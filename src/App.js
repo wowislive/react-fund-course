@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import ClassCounter from "./components/ClassCounter";
 import Counter from "./components/Counter";
 import PostItem from "./components/PostItem";
@@ -14,14 +14,12 @@ function App() {
     { id: 3, title: "Javascript 3", body: "Description" },
   ]);
 
-  const [title, setTitle] = useState("");
-
-  const bodyInputRef = useRef();
+  const [post, setPost] = useState({ title: "", body: "" });
 
   const addNewPost = (e) => {
     e.preventDefault();
-    console.log(title);
-    console.log(bodyInputRef.current.value);
+    setPosts([...posts, { ...post, id: Date.now() }]);
+    setPost({ title: "", body: "" });
   };
 
   return (
@@ -29,14 +27,14 @@ function App() {
       <form>
         {/* Controlled input */}
         <MyInput
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          value={post.title}
+          onChange={(e) => setPost({ ...post, title: e.target.value })}
           type="text"
           placeholder="Post name"
         />
-        {/* Uncontrolled input */}
         <MyInput
-          ref={bodyInputRef}
+          value={post.body}
+          onChange={(e) => setPost({ ...post, body: e.target.value })}
           type="text"
           placeholder="Post description"
         />
