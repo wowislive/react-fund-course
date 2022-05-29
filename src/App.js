@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import ClassCounter from "./components/ClassCounter";
 import Counter from "./components/Counter";
+import PostFilter from "./components/PostFilter";
 import PostForm from "./components/PostForm";
 import PostItem from "./components/PostItem";
 import PostList from "./components/PostList";
@@ -16,26 +17,25 @@ function App() {
     { id: 3, title: "bb", body: "ee" },
   ]);
 
-  const [selectedSort, setSelectedSort] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [filter, setFilter] = useState({ sort: "", query: "" });
 
-  function getSortedPosts() {
-    console.log("Vizvano");
-    if (selectedSort) {
+  const sortedPosts = useMemo(() => {
+    if (filter.sort) {
       return [...posts].sort((a, b) =>
-        a[selectedSort].localeCompare(b[selectedSort])
+        a[filter.sort].localeCompare(b[filter.sort])
       );
     }
     return posts;
-  }
-  const sortedPosts = getSortedPosts();
+  }, [filter.sort, posts]);
+
+  const sortedAndSearchedPosts = useMemo(() => {
+    return sortedPosts.filter((post) =>
+      post.title.toLowerCase().includes(filter.query.toLowerCase())
+    );
+  }, [filter.query, sortedPosts]);
 
   const createPost = (newPost) => {
     setPosts([...posts, newPost]);
-  };
-
-  const sortPosts = (sort) => {
-    setSelectedSort(sort);
   };
 
   const removePost = (post) => {
@@ -45,33 +45,16 @@ function App() {
   return (
     <div className="App">
       <PostForm create={createPost} />
-      <hr style={{ margin: "15px 0" }}></hr>
-      <div>
-        <MyInput
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search..."
-        />
-        <MySelect
-          onChange={sortPosts}
-          value={selectedSort}
-          defaultValue="Sorting by"
-          options={[
-            { value: "title", name: "By name" },
-            { value: "body", name: "By description" },
-          ]}
-        />
-      </div>
 
-      {posts.length ? (
-        <PostList
-          remove={removePost}
-          posts={sortedPosts}
-          title="The list about JS"
-        />
-      ) : (
-        <h1 style={{ textAlign: "center" }}>Posts not found!</h1>
-      )}
+      <hr style={{ margin: "15px 0" }}></hr>
+
+      <PostFilter filter={filter} setFilter={setFilter} />
+
+      <PostList
+        remove={removePost}
+        posts={sortedAndSearchedPosts}
+        title="The list about JS"
+      />
     </div>
   );
 }
